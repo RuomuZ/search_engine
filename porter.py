@@ -3,8 +3,9 @@ import re
 v = ['a','e','i','o','u']
 v_wxy = ['a','e','i','o','u','x','Y','z']
 valid_LI = ['c','d','e','g','h','k','m','n','r','t']
+db = ['b','d','f','g','m','n','p','r','t']
 p_ex = ['gener','commun','arsen']
-
+step2_sf = []
 
 
 def porter(t):
@@ -39,6 +40,7 @@ def backwardmode(wl, r1, r2):
     wl = step1a(wl)
     wl = step1b(wl,r1)
     wl = step1c(wl)
+    wl = step2(wl, r1)
 
 def step1a(wl):
     t = "".join(wl)
@@ -68,7 +70,7 @@ def step1b(wl,r1):
         t = re.sub("(ed|edly|ing|ingly)$","",t)
     if re.search("(at|bl|iz)$",t):
         t = t + "e"
-    if len(t) >= 2 and t[-1] not in v and t[-1] == t[-2]:
+    if len(t) >= 2 and t[-1] in db and t[-1] == t[-2]:
         t = t[0:-1]
     if isShort(t,r1):
         t = t + "e"
@@ -89,10 +91,44 @@ def isShort(t,r1):
 def step1c(wl):
     if len(wl) > 2 and (wl[-1] == 'y' or wl[-1] == "Y") and wl[-2] not in v:
         wl[-1] = "i"
-    print("".join(wl))
+    #print("".join(wl))
     return wl
 
-porter("by")
+
+def step2(wl,r1):
+    if r1 == None:
+        return wl
+    t = "".join(wl)
+    print(t + " and its r1 index" + str(r1))
+    pre = t[0:r1]
+    print("pre: " + pre)
+    region1 = t[r1:]
+    print("region1: " + region1)
+    region1 = re.sub("tional$", "tion", region1)
+    print("region1: after " + region1)
+    region1 = re.sub("enci$", "ence", region1)
+    region1 = re.sub("anci$", "ance", region1)
+    region1 = re.sub("abli$", "able", region1)
+    region1 = re.sub("entli$", "ent", region1)
+    region1 = re.sub("izer$", "ization", region1)
+    region1 = re.sub("(ational|ation|ator)$", "ate", region1)
+    region1 = re.sub("(alism|aliti|alli)$", "al", region1)
+    region1 = re.sub("fulness$", "ful", region1)
+    region1 = re.sub("(ousli|ousness)$", "ous", region1)
+    region1 = re.sub("(iveness|iviti)$", "ive", region1)
+    region1 = re.sub("(biliti|bli)$", "ble", region1)
+    if re.search("logi$",t):
+        region1 = re.sub("ogi$", "og", region1)
+    region1 = re.sub("fulli$", "ful", region1)
+    region1 = re.sub("lessli$", "less", region1)
+    if len(t) >= 3 and t[-3] in valid_LI:
+        region1 = re.sub("li$", "", region1)
+    t = pre + region1
+    print(t)
+    return t
+
+
+porter("hopelessly")
 #porter("cries")
 #porter("ties")
 #porter("tied")
