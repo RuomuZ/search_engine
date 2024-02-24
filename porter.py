@@ -12,7 +12,7 @@ except2 = ["inning","outing","canning","herring","earring","proceed","exceed","s
 
 def porter(t):
     if t in except1:
-        print(f"word {t} is in except1")
+  #      print(f"word {t} is in except1")
         return except1[t]
     wl = list(t)
     r1 = None
@@ -45,7 +45,7 @@ def porter(t):
 def backwardmode(wl, r1, r2):
     wl = step1a(wl)
     if "".join(wl) in except2:
-        print(f"word {wl} is in except 2")
+   #     print(f"word {wl} is in except 2")
         return "".join(wl)
     wl = step1b(wl,r1)
     wl = step1c(wl)
