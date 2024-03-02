@@ -8,6 +8,8 @@ position = {}
 fl = []
 url = {}
 
+
+#initialization function excatly the same as the one in server.py
 def init():
     global fl, position,url
     fl = []
@@ -30,6 +32,8 @@ def end():
 if __name__ == "__main__":
     init()
     try:
+    #As a console text interface, it is just a while loop that keeps taking input and show at most
+    #10 results. It ends after a key interrupt.
         while True:
             user_input = input("Search: ")
             print("list at most 10 relevant url below")

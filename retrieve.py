@@ -2,7 +2,8 @@ import os
 import re
 import porter
 
-
+#This function takes [str,str,str] as parameter where str here is the line just read, and each line 
+#correspond to a word. This function parse those strings and return [[[doc_id,[position],frequency ],[next post]],[next word],[]]
 def parse(post_str_list):
     toReturn = []
     for i in post_str_list:
@@ -18,7 +19,7 @@ def parse(post_str_list):
     return toReturn
 
 
-
+# This function recursively find if all post lists contain the specific document id
 def df_match(doc_id,list_slice):
     if len(list_slice) == 1:
         index = 0
@@ -35,7 +36,7 @@ def df_match(doc_id,list_slice):
 
 
 #pl -> position, il -> index list, q -> query
-
+#This function serve the boolean retrieval. It return a list of document id.
 def bool_retr(p, il, q):
     myP = r"[a-z0-9]{2,23}"
     target_list = re.findall(myP,q.lower())
@@ -43,7 +44,7 @@ def bool_retr(p, il, q):
     for i in range(len(target_list)):
         target_list[i] = porter.porter(target_list[i])
     token_set = set(target_list)
-    print(token_set)
+    #print(token_set)
     for token in token_set:
         token_init = ord(token[0])
         if token in p and token_init >= 97 and token_init <= 122:
@@ -59,7 +60,7 @@ def bool_retr(p, il, q):
     counter = 0
     if len(post_list) == 1:
         temp = post_list[0][:10]
-        print(f"temp: {temp}")
+        #print(f"temp: {temp}")
         for i in temp:
             toReturn.append(i[0])
         return toReturn
@@ -69,7 +70,7 @@ def bool_retr(p, il, q):
                 toReturn.append(post[0])
                 counter += 1
             if counter >= 10:
-                print(toReturn)
+                #print(toReturn)
                 return toReturn
-    print(toReturn)
+    #print(toReturn)
     return toReturn

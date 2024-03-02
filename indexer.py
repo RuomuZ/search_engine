@@ -172,8 +172,10 @@ def aggre():
         with open(f"reduce/agg_{counter}.json", "w") as f:
             json.dump(inverted, f)
         counter += 1
-# This function generate the index files. All unqiue words will be classified and based on their length (for now), and words in the same classification will be aggregate to the same file. I haven't done any sorting yet because I plan to do it when i get the ranking in future milestores.
 
+
+#Updated: This function save all words that started with the same alphabetic character in the same txt file and create a index file that record their starting index in order to use file.seek. Words thai
+# start with other characters are stored in the other.txt.
 def finalize(word_set):
     initChar = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
     file_list = []

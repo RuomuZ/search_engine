@@ -14,7 +14,8 @@ position = {}
 fl = []
 url = {}
 
-
+#initialization of files. fl contains all of the opened index files. url is a dictionary loaded from
+#a json file under finalIndex directory named url_id_match.json. Position is a dictionary loaed from # position.json, contain all words and ther corresponding starting index. 
 def init():
     global fl, position, url
     fl = []
@@ -28,17 +29,20 @@ def init():
         f = open(f"finalIndex/{c}.txt","r")
         fl.append(f)
 
-
+#this function close all files
 def end():
     global fl
     for i in range(len(fl)):
         fl[i].close()
 
-
+#This is the httphandler i wrote, serving the request
 class myHttpHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self,request, client_address, server, directory=None):
         super().__init__(request,client_address,server,directory=None)
 
+#This is the only function i override. It get the query, pass the query as parameter of bool_retr
+#function I implemented in retrieve.py, and get a list of doc_id in return. Based on the id, 
+#I can find the url in the dict url and fill the html content and respond to the user.
     def do_GET(self):
         global url,position,fl
         q = urlparse(self.path).query
@@ -65,10 +69,12 @@ class myHttpHandler(http.server.SimpleHTTPRequestHandler):
 Handler = myHttpHandler
 if __name__ == "__main__":
     init()
+    #This host a server on localhost port 8000 and use my self-defined handler to serve request
     try:
         with socketserver.TCPServer(("", PORT), Handler) as httpd:
             print("serving at port", PORT)
             httpd.serve_forever()
+    #This will end after a key interrupt
     except:
         end()
         raise
