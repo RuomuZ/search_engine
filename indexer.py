@@ -4,6 +4,15 @@ import json
 import re
 import porter
 from urllib.parse import urlparse
+import hashlib
+
+def create_dir():
+    try:
+        os.mkdir("finalIndex")
+        os.mkdir("map")
+        os.mkdir("reduce")
+    except:
+        print("directory already exist!")
 
 
 #this function get all of the paths of the files we are required to index. Those#directories and files are stored at DEV/. 
@@ -11,9 +20,10 @@ def get_files():
     file_list = []
     l = os.listdir("DEV")
     for i in l:
-        k = os.listdir("DEV/" + i) 
-        for f in k:
-            file_list.append("DEV/" + i + "/" + f)
+        if i != ".DS_Store":
+            k = os.listdir("DEV/" + i) 
+            for f in k:
+                file_list.append("DEV/" + i + "/" + f)
     return file_list
 #This function seperate the entire 50000+ pages into 2500 pages per batch.
 def get_batch(fl):
@@ -94,10 +104,22 @@ def is_valid_url(url):
 
         
 
+def get_positions(text,soup,tag):
+    toReturn = []
+    for t in soup.find_all(tag):
+        if t.string != None:
+            temp = text.find(t.string.lower())
+            toReturn.append((temp, temp+len(t.string)))
+    return toReturn
+
+
+
+
 #This function loads files we are about to index and process the word by using 
 #porter2 stemmer algorithm I implemented in porter.py. Indexes are dumped every #2500 pages. The extension of the dump is Json and the basic format of the dump is "word" : [post, post, post], post is a list in [doc_id, [positions],term_frequency]. At the end of this function, the map between doc_id and url will be write to another file.
 
 def map_f():
+    hashed_page = set()
     fl = get_files()
     total_f = len(fl)
     fl = get_batch(fl)
@@ -105,22 +127,45 @@ def map_f():
     doc_dict = {}
     inverted = {}
     counter = 0
+
     word_set = set()
     for c in range(0,len(fl)):
         for f in fl[c]:
             print(str(counter) + " : " + f)
+            file_stats = os.stat(f)
+            print(file_stats)
+            b = file_stats.st_size / (1024 * 1024)
+            print(f'File Size in MegaBytes is {b}')
+            if b > 0.2:
+                print("file too large")
+                counter += 1
+                total_f -= 1
+                continue
             content = get_content(f)
             if not is_valid_url(content["url"]):
                 counter += 1
                 total_f -= 1
                 continue
-            doc_dict[str(counter)] = content["url"]
-            soup = BeautifulSoup(content["content"],"html.parser")        
-            for script in soup(["script", "style"]):
+            soup = BeautifulSoup(content["content"],"html.parser")    
+            for script in soup(["style"]):
                 script.extract()
             text = soup.get_text().lower()
             myP = r"[a-z0-9]{2,23}"
             target_list = re.findall(myP,text)
+            hashv = hash(tuple(sorted(list(set(target_list)))))
+            if hashv in hashed_page:
+                counter += 1
+                total_f -= 1
+                continue
+            hashed_page.add(hashv)
+            doc_dict[str(counter)] = [content["url"],[],[],[],[],[],[]]     #[url, title positions, header 1, header 2, header 3,strong/bold postions,anchor]
+            doc_dict[str(counter)][1].extend(get_positions(text,soup,'title'))
+            doc_dict[str(counter)][2].extend(get_positions(text,soup,'h1'))
+            doc_dict[str(counter)][3].extend(get_positions(text,soup,'h2'))
+            doc_dict[str(counter)][4].extend(get_positions(text,soup,'h3'))
+            doc_dict[str(counter)][5].extend(get_positions(text,soup,'b'))
+            doc_dict[str(counter)][5].extend(get_positions(text,soup,'strong'))
+            doc_dict[str(counter)][6].extend(get_positions(text,soup,'a'))
             count = len(target_list)
             for i in range(0,count):
                 t = porter.porter(target_list[i])
@@ -140,7 +185,7 @@ def map_f():
             new_v = []
             for post in inverted[key].items():
                 doc_id, v = post
-                new = (doc_id, v[0], int((len(v[0])/v[1]) * 10000))
+                new = (doc_id, v[0], len(v[0]))
                 new_v.append(new)
             inverted[key] = new_v
         with open(f"map/batch_{c}.json", "w") as f:
@@ -196,7 +241,7 @@ def finalize(word_set):
                 elif c  == key[0]:
                     inverted[key] = inde[key]
         for key in inverted.keys():
-            inverted[key].sort(key=lambda x : int(x[0]))
+            inverted[key].sort(key=lambda x : int(x[2]),reverse=True)
         with open(f"finalIndex/{c}.txt", "w") as f:
             for k,v in inverted.items():
                 position[k] = f.tell()
@@ -217,7 +262,7 @@ def finalize(word_set):
             elif key[0] not in initChar:
                 EI[key] = inde[key]
     for key in EI.keys():
-        EI[key].sort(key=lambda x : int(x[0]))
+        EI[key].sort(key=lambda x : int(x[2]),reverse=True)
     with open(f"finalIndex/other.txt", "w") as f:
         for k,v in EI.items():
             position[k] = f.tell()
@@ -236,6 +281,7 @@ def finalize(word_set):
 
 
 if __name__ == "__main__":
+    create_dir()
     word_set = map_f()
     aggre()
     finalize(word_set)

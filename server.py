@@ -48,7 +48,7 @@ class myHttpHandler(http.server.SimpleHTTPRequestHandler):
         q = urlparse(self.path).query
         doc_ids = []
         if q != '':
-            doc_ids = retrieve.bool_retr(position,fl,str((parse_qs(q))["search"][0]))
+            doc_ids = retrieve.retr(position,fl,str((parse_qs(q))["search"][0]),url)
         self.send_response(200)
         self.send_header('Content-type','text/html')
         self.end_headers()
@@ -60,7 +60,7 @@ class myHttpHandler(http.server.SimpleHTTPRequestHandler):
       "</label></form>")
         output.write("<table><thead><tr><th>Title</th></tr>")
         for doc_id in doc_ids:
-            output.write("<tr><th>"+url[doc_id]+"</th></tr>")
+            output.write("<tr><th>"+url[doc_id][0]+"</th></tr>")
         output.write("</thead></table></body></html>")        
         self.wfile.write(output.getvalue().encode())
         return

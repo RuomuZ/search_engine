@@ -10,6 +10,9 @@ except1 = {"skis":"ski","skies":"sky","dying":"die","lying":"lie","tying":"tie",
         "bias":"bias","andes":"andes"}
 except2 = ["inning","outing","canning","herring","earring","proceed","exceed","succeed"]
 
+# I implement the Porter2 Stemmer following the instruction and phseudo code on the website provide on the lecture slides.
+
+
 def porter(t):
     if t in except1:
   #      print(f"word {t} is in except1")
@@ -224,7 +227,7 @@ def step5(wl,r1,r2):
 
 
 
-porter("sky")
+#porter("sky")
 #porter("cries")
 #porter("ties")
 #porter("tied")

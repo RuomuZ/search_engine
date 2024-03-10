@@ -1,6 +1,6 @@
 import json
 import retrieve
-
+import time
 
 initChar = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','other'] 
 
@@ -36,9 +36,12 @@ if __name__ == "__main__":
     #10 results. It ends after a key interrupt.
         while True:
             user_input = input("Search: ")
+            start = time.time()
             print("list at most 10 relevant url below")
-            for i in retrieve.bool_retr(position,fl,user_input):
-                print(url[i])
+            for i in retrieve.retr(position,fl,user_input,url):
+                print(url[i][0])
+            end = time.time()
+            print(f"time used: {end - start}")
     except:
         print("exit")
         end()
